@@ -2,24 +2,24 @@ package parser
 
 import (
 	"fmt"
-	"strconv"
+	. "setlang/lexer"
 )
 
 // Parser struct with methods
 type Parser struct {
-	tokens  []Token
+	Tokens  []Token
 	current uint64
 }
 
-// Returns a new Parser instance with the providade tokens list
+// Returns a new Parser instance with the providade Tokens list
 func NewParser(tokens []Token) *Parser {
 	return &Parser{
-		tokens:  tokens,
+		Tokens:  tokens,
 		current: 0,
 	}
 }
 
-// Processes the tokens list parsing them and returning an AST
+// Processes the Tokens list parsing them and returning an AST
 func (p *Parser) Run() []IStatement {
 	stmts := []IStatement{}
 
@@ -58,16 +58,24 @@ func (p *Parser) declaration() IStatement {
 func (p *Parser) varDeclaration() IStatement {
 	name := p.consume(Identifier, "Expect variable name.")
 
+	var type_ann *Token
 	var initializer IExpression
+	if p.match(Colon) {
+		if p.peek().Type == Identifier {
+			type_ann = p.advance()
+		} else {
+			type_ann = nil
+		}
+	}
 	if p.match(Equal) {
 		initializer = p.expression()
 	} else {
-		initializer = &Literal[interface{}]{Value: nil}
+		initializer = &Literal{Value: nil}
 	}
 
 	p.consume(Semicolon, "Expect ';' after variable declaration.")
 
-	return &VarDeclExpression{Name: name, Initializer: initializer}
+	return &VarDeclExpression{Name: name, Initializer: initializer, Type: type_ann}
 }
 
 func (p *Parser) expressionStatement() IStatement {
@@ -184,35 +192,9 @@ func (p *Parser) leftUnary() IExpression {
 
 func (p *Parser) primary() IExpression {
 
-	if p.match(False) {
-		return &Literal[bool]{
-			Value: false,
-		}
-	}
-	if p.match(True) {
-		return &Literal[bool]{
-			Value: true,
-		}
-	}
-	if p.match(Null) {
-		return &Literal[interface{}]{
-			Value: nil,
-		}
-	}
-
-	if p.match(Number10, String) {
-		switch p.previous().Type {
-		case String:
-			return &Literal[string]{
-				Value: p.previous().Lexeme,
-			}
-		case Number10:
-			{
-				i, _ := strconv.Atoi(p.previous().Lexeme)
-				return &Literal[int64]{
-					Value: int64(i),
-				}
-			}
+	if p.match(Number2, Number8, Number10, Number16, String, False, True, Null) {
+		return &Literal{
+			Value: p.previous(),
 		}
 	}
 
@@ -285,7 +267,7 @@ func (p *Parser) checkPrevious(token_type TokenType) bool {
 	return p.peekPrevious().Type == token_type
 }
 
-func (p *Parser) advance() Token {
+func (p *Parser) advance() *Token {
 	if !p.isEof() {
 		p.current++
 	}
@@ -296,26 +278,26 @@ func (p *Parser) isEof() bool {
 	return p.peek().Type == Eof
 }
 
-func (p *Parser) peek() Token {
-	return p.tokens[p.current]
+func (p *Parser) peek() *Token {
+	return &p.Tokens[p.current]
 }
 
-func (p *Parser) peekNext() Token {
+func (p *Parser) peekNext() *Token {
 	if !p.isEof() {
-		return p.tokens[len(p.tokens)-1]
+		return &p.Tokens[len(p.Tokens)-1]
 	}
-	return p.tokens[p.current+1]
+	return &p.Tokens[p.current+1]
 }
 
-func (p *Parser) peekPrevious() Token {
-	return p.tokens[p.current-1]
+func (p *Parser) peekPrevious() *Token {
+	return &p.Tokens[p.current-1]
 }
 
-func (p *Parser) previous() Token {
-	return p.tokens[p.current-1]
+func (p *Parser) previous() *Token {
+	return &p.Tokens[p.current-1]
 }
 
-func (p *Parser) consume(token_type TokenType, message string) Token {
+func (p *Parser) consume(token_type TokenType, message string) *Token {
 	if p.check(token_type) {
 		return p.advance()
 	}

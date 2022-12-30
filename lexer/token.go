@@ -1,6 +1,9 @@
-package parser
+package lexer
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // Token struct holding the lexeme and its position on the source code
 type Token struct {
@@ -85,6 +88,8 @@ const (
 	Number10
 	Number8
 	Number2
+
+	TypeAnn
 )
 
 // String formating for the Tokens enums
@@ -93,89 +98,89 @@ func (t TokenType) String() string {
 	case Eof:
 		return "EOF"
 	case LeftParen:
-		return "("
+		return "left parenthesis"
 	case RightParen:
-		return ")"
+		return "right parenthesis"
 	case LeftBrace:
-		return "{"
+		return "left brace"
 	case RightBrace:
-		return "}"
+		return "right brace"
 	case LeftBracket:
-		return "["
+		return "left bracket"
 	case RightBracket:
-		return "]"
+		return "right bracket"
 
 	case Comma:
-		return ","
+		return "comma"
 	case Colon:
-		return ":"
+		return "colon"
 	case Semicolon:
-		return ";"
+		return "semicolon"
 	case Dot:
-		return "."
+		return "dot"
 
 	case Star:
-		return "*"
+		return "star"
 	case Minus:
-		return "-"
+		return "minus"
 	case Plus:
-		return "+"
+		return "plus"
 	case Slash:
-		return "/"
+		return "slash"
 	case Inc:
-		return "++"
+		return "increment"
 	case Dec:
-		return "--"
+		return "decrement"
 
 	case Bang:
-		return "!"
+		return "bang"
 	case BangEqual:
-		return "!="
+		return "different"
 	case Equal:
-		return "="
+		return "assignment"
 	case EqualEqual:
-		return "=="
+		return "equallity"
 	case Lesser:
-		return "<"
+		return "lesser"
 	case LesserEqual:
-		return "<="
+		return "lesser equal"
 	case Greater:
-		return ">"
+		return "greater"
 	case GreaterEqual:
-		return ">="
+		return "greater equal"
 	case Ampersand:
-		return "&"
+		return "ampersand"
 	case DoubleAmpersand:
-		return "&&"
+		return "double ampersand"
 	case Pipe:
-		return "|"
+		return "pipe"
 	case DoublePipe:
-		return "||"
+		return "double pipe"
 	case PlusEqual:
-		return "+="
+		return "plus assign"
 	case MinusEqual:
-		return "-="
+		return "minus minus assign"
 	case StarEqual:
-		return "*="
+		return "star assign"
 	case SlashEqual:
-		return "/="
+		return "slash assign"
 	case Xor:
-		return "^"
+		return "xor"
 	case XorEqual:
-		return "^="
+		return "xor assign"
 	case Rem:
-		return "%"
+		return "rem"
 	case Shl:
-		return "<<"
+		return "shift left"
 	case Shr:
-		return ">>"
+		return "shift right"
 
 	case LeftArrow:
-		return "->"
+		return "left arrow"
 	case RightArrow:
-		return "<-"
+		return "right arrow"
 	case FuncArrow:
-		return "=>"
+		return "function arrow"
 
 	case If:
 		return "if"
@@ -213,6 +218,10 @@ func (t TokenType) String() string {
 	}
 
 	panic("Unknown token")
+}
+
+func (t TokenType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(t.String())
 }
 
 const (

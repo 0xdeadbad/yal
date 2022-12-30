@@ -1,4 +1,4 @@
-package parser
+package lexer
 
 func IsBase16(c byte) bool {
 	return IsBase10(c) || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F'

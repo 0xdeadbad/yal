@@ -1,4 +1,4 @@
-package parser
+package lexer
 
 // Lexer struct responsible to extract all tokens from given string source
 type Lexer struct {

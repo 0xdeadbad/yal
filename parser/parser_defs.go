@@ -1,5 +1,9 @@
 package parser
 
+import (
+	. "setlang/lexer"
+)
+
 type IStatement interface {
 	stmtNode()
 }
@@ -8,7 +12,7 @@ type IExpression interface {
 	exprNode()
 }
 
-type IPrimary interface {
+/*type IPrimary interface {
 	primNode()
 }
 
@@ -22,35 +26,35 @@ type IFactor interface {
 
 type ITerm interface {
 	termNode()
-}
+}*/
 
 type Binary struct {
 	Left     IExpression
-	Operator Token
+	Operator *Token
 	Right    IExpression
 }
 
 func (b *Binary) exprNode() {}
 
 type Unary struct {
-	Operator Token
+	Operator *Token
 	Right    IExpression
 }
 
 func (b *Unary) exprNode() {}
 
 type LeftUnary struct {
-	Operator Token
+	Operator *Token
 	Left     IExpression
 }
 
 func (b *LeftUnary) exprNode() {}
 
-type Literal[T any] struct {
-	Value T
+type Literal struct {
+	Value *Token
 }
 
-func (b *Literal[T]) exprNode() {}
+func (b *Literal) exprNode() {}
 
 type Grouping struct {
 	Grouped IExpression
@@ -59,18 +63,17 @@ type Grouping struct {
 func (b *Grouping) exprNode() {}
 
 type Variable struct {
-	Name Token
+	Name *Token
 }
 
 func (b *Variable) exprNode() {}
 
 type Assign struct {
-	Name Token
+	Name *Token
 	Expr IExpression
 }
 
 func (b *Assign) exprNode() {}
-func (b *Assign) stmtNode() {}
 
 type StatementExpression struct {
 	Expr IExpression
@@ -79,8 +82,9 @@ type StatementExpression struct {
 func (s *StatementExpression) stmtNode() {}
 
 type VarDeclExpression struct {
-	Name        Token
+	Name        *Token
 	Initializer IExpression
+	Type        *Token
 }
 
 func (s *VarDeclExpression) exprNode() {}
@@ -102,7 +106,7 @@ func (b *IfExpr) stmtNode() {}
 
 type Logical struct {
 	Left     IExpression
-	Operator Token
+	Operator *Token
 	Right    IExpression
 }
 
