@@ -1,7 +1,7 @@
 package parser
 
 import (
-	. "setlang/lexer"
+	. "yal/lexer"
 )
 
 type IStatement interface {

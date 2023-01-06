@@ -2,7 +2,7 @@ package parser
 
 import (
 	"fmt"
-	. "setlang/lexer"
+	. "yal/lexer"
 )
 
 // Parser struct with methods

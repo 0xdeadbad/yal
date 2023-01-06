@@ -1,3 +1,3 @@
-module setlang
+module yal
 
 go 1.19

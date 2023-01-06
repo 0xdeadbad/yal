@@ -2,8 +2,8 @@ package parser
 
 import (
 	"encoding/json"
-	"setlang/lexer"
 	"testing"
+	"yal/lexer"
 )
 
 func TestParser(t *testing.T) {
