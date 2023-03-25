@@ -10,6 +10,7 @@ import (
 func TestParser(t *testing.T) {
 	ctx := context.Background()
 	l := lexer.NewLexer(ctx, `
+	
 	let variable: int = (4 * 2) + 5;
 	variable = 4;
 	variable = 5 * 2 * ( 5 + 3 );
@@ -30,6 +31,10 @@ func TestParser(t *testing.T) {
 		let str = "hello";
 		let a = "test";
 	}
+	// comment
+	/* comment */
+	
+	
 	`)
 
 	tokens, _ := l.Scan()

@@ -86,6 +86,12 @@ type IfExpr struct {
 	ElseBranch IStatement
 }
 
+type FnDeclStmt struct {
+	Name        *Token
+	Initializer IExpression
+	Type        *Token
+}
+
 func (b *IfExpr) stmtNode() {}
 
 type Logical struct {

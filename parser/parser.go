@@ -46,6 +46,9 @@ func (p *Parser) statement() IStatement {
 	if p.match(LeftBrace) {
 		return &Block{Statements: p.block()}
 	}
+	if p.match(Fn) {
+		return p.fnStatement()
+	}
 
 	return p.expressionStatement()
 }
@@ -324,6 +327,20 @@ func (p *Parser) ifStatement() IStatement {
 	p.consume(LeftParen, "Expect '(' after 'if'.")
 	condition := p.expression()
 	p.consume(RightParen, "Expect ')' after if condition.")
+
+	thenBranch := p.statement()
+	var elseBranch IStatement = nil
+	if p.match(Else) {
+		elseBranch = p.statement()
+	}
+
+	return &IfExpr{Condition: condition, ThenBranch: thenBranch, ElseBranch: elseBranch}
+}
+
+func (p *Parser) fnStatement() IStatement {
+	p.consume(LeftParen, "Expect '(' after 'fn'.")
+	condition := p.expression()
+	p.consume(RightParen, "Expect ')' after fn condition.")
 
 	thenBranch := p.statement()
 	var elseBranch IStatement = nil
