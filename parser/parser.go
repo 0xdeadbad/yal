@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"context"
 	"fmt"
 	. "yal/lexer"
 )
@@ -9,13 +10,15 @@ import (
 type Parser struct {
 	Tokens  []Token
 	current uint64
+	ctx     context.Context
 }
 
 // Returns a new Parser instance with the providade Tokens list
-func NewParser(tokens []Token) *Parser {
+func NewParser(ctx context.Context, tokens []Token) *Parser {
 	return &Parser{
 		Tokens:  tokens,
 		current: 0,
+		ctx:     ctx,
 	}
 }
 

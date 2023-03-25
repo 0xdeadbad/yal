@@ -51,12 +51,13 @@ func numberState(l *Lexer) stateFn {
 }
 
 func stringState(l *Lexer) stateFn {
+	l.ignore()
+	l.advance()
 	for l.peek() != '"' {
 		l.advance()
 	}
-	l.advance()
-
 	l.emit(String)
+	l.advance()
 
 	return stateMatch
 }
@@ -108,7 +109,8 @@ func compoundTokenState(l *Lexer) stateFn {
 	case '!':
 		switch l.peek() {
 		case '=':
-			l.advanceEmit(BangEqual)
+			l.advance()
+			l.emit(BangEqual)
 		default:
 			l.emit(Bang)
 		}
@@ -116,9 +118,11 @@ func compoundTokenState(l *Lexer) stateFn {
 	case '=':
 		switch l.peek() {
 		case '=':
-			l.advanceEmit(EqualEqual)
+			l.advance()
+			l.emit(EqualEqual)
 		case '>':
-			l.advanceEmit(FuncArrow)
+			l.advance()
+			l.emit(FuncArrow)
 		default:
 			l.emit(Equal)
 		}
@@ -126,9 +130,11 @@ func compoundTokenState(l *Lexer) stateFn {
 	case '>':
 		switch l.peek() {
 		case '=':
-			l.advanceEmit(GreaterEqual)
+			l.advance()
+			l.emit(GreaterEqual)
 		case '>':
-			l.advanceEmit(Shr)
+			l.advance()
+			l.emit(Shr)
 		default:
 			l.emit(Greater)
 		}
@@ -136,36 +142,44 @@ func compoundTokenState(l *Lexer) stateFn {
 	case '<':
 		switch l.peek() {
 		case '=':
-			l.advanceEmit(LesserEqual)
+			l.advance()
+			l.emit(LesserEqual)
 		case '-':
-			l.advanceEmit(RightArrow)
+			l.advance()
+			l.emit(RightArrow)
 		case '<':
-			l.advanceEmit(Shl)
+			l.advance()
+			l.emit(Shl)
 		default:
 			l.emit(Lesser)
 		}
 	case '-':
 		switch l.peek() {
 		case '>':
-			l.advanceEmit(LeftArrow)
+			l.advance()
+			l.emit(LeftArrow)
 		case '-':
-			l.advanceEmit(Dec)
+			l.advance()
+			l.emit(Dec)
 		case '=':
-			l.advanceEmit(MinusEqual)
+			l.advance()
+			l.emit(MinusEqual)
 		default:
 			l.emit(Minus)
 		}
 	case '*':
 		switch l.peek() {
 		case '=':
-			l.advanceEmit(StarEqual)
+			l.advance()
+			l.emit(StarEqual)
 		default:
 			l.emit(Star)
 		}
 	case '/':
 		switch l.peek() {
 		case '=':
-			l.advanceEmit(SlashEqual)
+			l.advance()
+			l.emit(SlashEqual)
 		case '/':
 			l.advance()
 			return oneLineCommentState(l)
@@ -178,30 +192,35 @@ func compoundTokenState(l *Lexer) stateFn {
 	case '+':
 		switch l.peek() {
 		case '+':
-			l.advanceEmit(Inc)
+			l.advance()
+			l.emit(Inc)
 		case '=':
-			l.advanceEmit(PlusEqual)
+			l.advance()
+			l.emit(PlusEqual)
 		default:
 			l.emit(Plus)
 		}
 	case '^':
 		switch l.peek() {
 		case '=':
-			l.advanceEmit(XorEqual)
+			l.advance()
+			l.emit(XorEqual)
 		default:
 			l.emit(Xor)
 		}
 	case '|':
 		switch l.peek() {
 		case '|':
-			l.advanceEmit(DoublePipe)
+			l.advance()
+			l.emit(DoublePipe)
 		default:
 			l.emit(Pipe)
 		}
 	case '&':
 		switch l.peek() {
 		case '&':
-			l.advanceEmit(DoubleAmpersand)
+			l.advance()
+			l.emit(DoubleAmpersand)
 		default:
 			l.emit(Ampersand)
 		}
@@ -301,6 +320,7 @@ func stateMatch(l *Lexer) stateFn {
 
 	case '\n':
 		l.line++
+		l.column = 1
 		return ignoreState
 
 	case '"':

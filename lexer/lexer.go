@@ -1,5 +1,7 @@
 package lexer
 
+import "context"
+
 // Lexer struct responsible to extract all tokens from given string source
 type Lexer struct {
 	source   string
@@ -8,12 +10,13 @@ type Lexer struct {
 	line     uint64
 	column   uint64
 	keywords map[string]TokenType
-	tokenCh  chan Token
+	tokenCh  chan *Token
 	state    stateFn
+	ctx      context.Context
 }
 
 // Returns a new Lexer with the given source string and predefined keywords
-func NewLexer(source string) *Lexer {
+func NewLexer(ctx context.Context, source string) *Lexer {
 	keywords := make(map[string]TokenType)
 
 	keywords["if"] = If
@@ -36,9 +39,25 @@ func NewLexer(source string) *Lexer {
 		line:     1,
 		column:   0,
 		keywords: keywords,
-		tokenCh:  make(chan Token, 2),
+		tokenCh:  make(chan *Token, 2),
 		state:    stateMatch,
+		ctx:      ctx,
 	}
+}
+
+// Scans the tokens from the given source and return a list of scanned tokens
+func (l *Lexer) Scan() ([]Token, error) {
+	tokens := []Token{}
+
+	for token := l.NextToken(); token != nil && token.Type != Eof; token = l.NextToken() {
+		tokens = append(tokens[:], *token)
+	}
+
+	tokens = append(tokens[:], *l.newToken(Eof))
+
+	close(l.tokenCh)
+
+	return tokens, nil
 }
 
 func (l *Lexer) advance() byte {
@@ -52,32 +71,12 @@ func (l *Lexer) advance() byte {
 	return c
 }
 
-// Scans the tokens from the given source and return a list of scanned tokens
-func (l *Lexer) Scan() ([]Token, error) {
-	tokens := []Token{}
-
-	for token := l.NextToken(); token.Type != Eof; token = l.NextToken() {
-		tokens = append(tokens[:], token)
-	}
-
-	tokens = append(tokens[:], l.newToken(Eof))
-
-	close(l.tokenCh)
-
-	return tokens, nil
-}
-
-func (l *Lexer) advanceEmit(token_type TokenType) {
-	l.advance()
-	l.emit(token_type)
-}
-
 func (l *Lexer) emit(token_type TokenType) {
 	token := l.newToken(token_type)
 	l.tokenCh <- token
 }
 
-func (l *Lexer) newToken(token_type TokenType) Token {
+func (l *Lexer) newToken(token_type TokenType) *Token {
 	token := Token{
 		Type:   token_type,
 		Lexeme: l.source[l.start:l.current],
@@ -85,7 +84,7 @@ func (l *Lexer) newToken(token_type TokenType) Token {
 		Column: l.column,
 	}
 	l.start = l.current
-	return token
+	return &token
 }
 
 func (l *Lexer) peek() byte {
@@ -97,7 +96,7 @@ func (l *Lexer) peek() byte {
 }
 
 func (l *Lexer) peekNext() byte {
-	if l.isEof() && l.current+1 < uint64(len(l.source)) {
+	if l.isEof() || l.current+1 >= uint64(len(l.source)) {
 		return 0
 	}
 
@@ -131,15 +130,18 @@ func (l *Lexer) ignore() {
 
 func (l *Lexer) backup() {
 	l.current--
+	l.column--
 	l.start = l.current
 }
 
 // Return the next token available to be consumed
-func (l *Lexer) NextToken() Token {
+func (l *Lexer) NextToken() *Token {
 	for {
 		select {
 		case token := <-l.tokenCh:
 			return token
+		case <-l.ctx.Done():
+			return nil
 		default:
 			l.state = l.state(l)
 		}

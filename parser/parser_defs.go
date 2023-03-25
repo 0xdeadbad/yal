@@ -12,22 +12,6 @@ type IExpression interface {
 	exprNode()
 }
 
-/*type IPrimary interface {
-	primNode()
-}
-
-type IUnary interface {
-	unaryNode()
-}
-
-type IFactor interface {
-	factorNode()
-}
-
-type ITerm interface {
-	termNode()
-}*/
-
 type Binary struct {
 	Left     IExpression
 	Operator *Token
