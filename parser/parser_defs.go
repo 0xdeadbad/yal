@@ -86,13 +86,20 @@ type IfExpr struct {
 	ElseBranch IStatement
 }
 
+func (b *IfExpr) stmtNode() {}
+
 type FnDeclStmt struct {
-	Name        *Token
-	Initializer IExpression
-	Type        *Token
+	Name *Token
+	Body IStatement
+	Args *FnArgs
+	Type *Token
 }
 
-func (b *IfExpr) stmtNode() {}
+func (b *FnDeclStmt) stmtNode() {}
+
+type FnArgs []IStatement
+
+func (b *FnArgs) stmtNode() {}
 
 type Logical struct {
 	Left     IExpression

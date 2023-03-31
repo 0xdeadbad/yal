@@ -34,6 +34,9 @@ func (p *Parser) Run() []IStatement {
 }
 
 func (p *Parser) statement() IStatement {
+	if p.match(Fn) {
+		return p.fnStatement()
+	}
 	if p.match(For) {
 		return p.forStatement()
 	}
@@ -45,9 +48,6 @@ func (p *Parser) statement() IStatement {
 	}
 	if p.match(LeftBrace) {
 		return &Block{Statements: p.block()}
-	}
-	if p.match(Fn) {
-		return p.fnStatement()
 	}
 
 	return p.expressionStatement()
@@ -185,17 +185,6 @@ func (p *Parser) unary() IExpression {
 	return p.primary()
 }
 
-func (p *Parser) leftUnary() IExpression {
-	if p.matchNext(Inc, Dec) {
-		operator := p.peekNext()
-		right := p.unary()
-		p.advance()
-		return &Unary{Operator: operator, Right: right}
-	}
-
-	return p.primary()
-}
-
 func (p *Parser) primary() IExpression {
 
 	if p.match(Number2, Number8, Number10, Number16, String, False, True, Null) {
@@ -308,7 +297,7 @@ func (p *Parser) consume(token_type TokenType, message string) *Token {
 		return p.advance()
 	}
 
-	panic(fmt.Sprintf("Problem on consume(%+v)", token_type))
+	panic(fmt.Sprintf("Problem on consume(%+v) != (%+v)", token_type, p.peek().Type))
 }
 
 func (p *Parser) block() []IStatement {
@@ -338,17 +327,13 @@ func (p *Parser) ifStatement() IStatement {
 }
 
 func (p *Parser) fnStatement() IStatement {
-	p.consume(LeftParen, "Expect '(' after 'fn'.")
-	condition := p.expression()
-	p.consume(RightParen, "Expect ')' after fn condition.")
+	fnName := p.consume(Identifier, "Expect 'fn' name.")
+	p.consume(LeftParen, "Expect '(' after 'fn' name.")
+	p.consume(RightParen, "Expect ')' fn args.")
 
-	thenBranch := p.statement()
-	var elseBranch IStatement = nil
-	if p.match(Else) {
-		elseBranch = p.statement()
-	}
+	fnBody := p.statement()
 
-	return &IfExpr{Condition: condition, ThenBranch: thenBranch, ElseBranch: elseBranch}
+	return &FnDeclStmt{Name: fnName, Body: fnBody, Type: nil}
 }
 
 func (p *Parser) or() IExpression {
