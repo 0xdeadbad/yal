@@ -65,7 +65,7 @@ func (p *Parser) varDeclaration() IStatement {
 	name := p.consume(Identifier, "Expect variable name.")
 
 	var type_ann *Token
-	var initializer IExpression
+	var initializer IExpression = &Literal{Value: nil}
 	if p.match(Colon) {
 		if p.peek().Type == Identifier {
 			type_ann = p.advance()
@@ -75,8 +75,8 @@ func (p *Parser) varDeclaration() IStatement {
 	}
 	if p.match(Equal) {
 		initializer = p.expression()
-	} else {
-		initializer = &Literal{Value: nil}
+	} else if p.match(Comma) || p.peek().Type == RightParen {
+		return &VarDeclExpression{Name: name, Initializer: &Literal{Value: nil}, Type: type_ann}
 	}
 
 	p.consume(Semicolon, "Expect ';' after variable declaration.")
@@ -90,6 +90,23 @@ func (p *Parser) expressionStatement() IStatement {
 	return &StatementExpression{
 		Expr: expr,
 	}
+}
+
+func (p *Parser) fnCall() IExpression {
+	fnName := p.consume(Identifier, "there's not a valid identifier for the fn call")
+	p.consume(LeftParen, "missing ( after fn identifier")
+	fnArgs := FnCallArgs{}
+	for p.peek().Type != RightParen {
+		fnArgs = append(fnArgs, p.fnCallArg())
+	}
+	p.consume(RightParen, "missing ) after fn args")
+
+	return &FnCall{Name: fnName, Args: fnArgs, Type: nil}
+}
+
+func (p *Parser) fnCallArg() IExpression {
+	p.match(Comma)
+	return p.expression()
 }
 
 func (p *Parser) assignment() IExpression {
@@ -112,6 +129,10 @@ func (p *Parser) assignment() IExpression {
 }
 
 func (p *Parser) expression() IExpression {
+	fmt.Println("curr ", p.Tokens[p.current].Type.String(), p.Tokens[p.current].Lexeme, p.peek().Type.String(), p.peek().Lexeme, p.peekNext().Type.String(), p.peekNext().Lexeme)
+	if p.peek().Type == Identifier && p.peekNext().Type == LeftParen {
+		return p.fnCall()
+	}
 	return p.assignment()
 }
 
@@ -278,8 +299,8 @@ func (p *Parser) peek() *Token {
 }
 
 func (p *Parser) peekNext() *Token {
-	if !p.isEof() {
-		return &p.Tokens[len(p.Tokens)-1]
+	if p.isEof() {
+		return nil
 	}
 	return &p.Tokens[p.current+1]
 }
@@ -297,7 +318,7 @@ func (p *Parser) consume(token_type TokenType, message string) *Token {
 		return p.advance()
 	}
 
-	panic(fmt.Sprintf("Problem on consume(%+v) != (%+v)", token_type, p.peek().Type))
+	panic(fmt.Sprintf("Problem on consume(%+v) != (%+v): %s", token_type, p.peek().Type, message))
 }
 
 func (p *Parser) block() []IStatement {
@@ -329,11 +350,21 @@ func (p *Parser) ifStatement() IStatement {
 func (p *Parser) fnStatement() IStatement {
 	fnName := p.consume(Identifier, "Expect 'fn' name.")
 	p.consume(LeftParen, "Expect '(' after 'fn' name.")
+	fnArgs := FnArgs{}
+	for p.peek().Type != RightParen {
+		fnArgs = append(fnArgs, p.varDeclaration())
+	}
 	p.consume(RightParen, "Expect ')' fn args.")
+
+	var fnType *Token
+
+	if p.match(Colon) {
+		fnType = p.consume(Identifier, "Expect identifier after : in fn decl")
+	}
 
 	fnBody := p.statement()
 
-	return &FnDeclStmt{Name: fnName, Body: fnBody, Type: nil}
+	return &FnDeclStmt{Name: fnName, Body: fnBody, Type: fnType, Args: &fnArgs}
 }
 
 func (p *Parser) or() IExpression {

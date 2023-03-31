@@ -99,6 +99,16 @@ func (b *FnDeclStmt) stmtNode() {}
 
 type FnArgs []IStatement
 
+type FnCallArgs []IExpression
+
+type FnCall struct {
+	Name *Token
+	Args FnCallArgs
+	Type *Token
+}
+
+func (b *FnCall) exprNode() {}
+
 func (b *FnArgs) stmtNode() {}
 
 type Logical struct {
