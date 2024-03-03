@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_0xdeadbad_yal_1709499548710-push-trigger-input-set
+  identifier: Build_0xdeadbad_yal_1709499548710pushtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: default_project
+  pipeline:
+    identifier: Build_0xdeadbad_yal_1709499548710
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
