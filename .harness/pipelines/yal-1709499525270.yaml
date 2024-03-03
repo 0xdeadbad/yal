@@ -21,6 +21,7 @@ pipeline:
                   identifier: gobuild
                   name: go_build
                   spec:
+                    shell: Bash
                     command: go build
                   timeout: ""
                   type: Run
@@ -39,9 +40,12 @@ pipeline:
                   timeout: ""
                   type: Run
           platform:
-            arch: Amd64
             os: Linux
+            arch: Amd64
           runtime:
-            spec: {}
             type: Docker
+            spec: {}
         type: CI
+        description: ""
+        delegateSelectors:
+          - docker-delegate
