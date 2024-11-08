@@ -24,5 +24,7 @@ pkgs.stdenv.mkDerivation {
   installPhase = ''
     mkdir -p $out/bin
     cp $out/result/yal $out/bin
+    rm $out/result/yal
+    rmdir $out/result
   '';
 }
