@@ -13,11 +13,15 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      yal = (import ./default.nix { inherit pkgs; });
     in
     {
-      packages.${system}.default = (import ./default.nix { inherit pkgs; });
+      packages.${system}.default = yal;
 
       devShells.${system}.default = pkgs.mkShell {
+        packages = [
+          yal
+        ];
         buildInputs = [];
       };
     };
