@@ -366,7 +366,6 @@ func (p *Parser) block() IStatement {
 }
 
 func (p *Parser) ifStatement() IStatement {
-	fmt.Printf("%+v\n", p.Tokens)
 	p.consume(LeftParen, "Expect '(' after 'if'.")
 	condition := p.expression()
 	p.consume(RightParen, "Expect ')' after if condition.")
