@@ -4,45 +4,69 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"yal/lexer"
 	"yal/parser"
 )
 
 func main() {
 	ctx := context.Background()
-	l := lexer.NewLexer(ctx, `
-fn main() : void {
-	let variable: int = (4 * 2) + 5;
-	variable = 4;
-	variable = 5 * 2 * ( 5 + 3 );
 
-	let test = 5;
+	if len(os.Args) != 2 {
+		panic("there must have 1 parameter, a file or - for stdin")
+	}
 
-	if ((x > 5) || (x < 2)) {
-		let y = (5 + 1) - 2;
+	var f *os.File
+	var data []byte
+	var err error
+
+	if os.Args[1] == "-" {
+		f = os.Stdin
 	} else {
-		let h = NULL;
+		f, err = os.Open(os.Args[1])
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	while (7 < x) {
-		--x;
+	data, err = io.ReadAll(f)
+	if err != nil {
+		panic(err)
 	}
 
-	for (let x = 10; x < 10; ++x) {
-		let str = "hello";
-		let a = "test";
-	}
-	// comment
-	/* comment */
-}
-fn test(a: int, b: uint, c: char) : uint {
-	print("a b c", -1, --1, x + 5);
-}
-`)
+	l := lexer.NewLexer(ctx, string(data))
 
-	tokens, _ := l.Scan()
-	parser := parser.NewParser(ctx, tokens)
-	tree := parser.Run()
-	data, _ := json.MarshalIndent(tree, "", "  ")
+	tokens, err := l.Scan()
+	if err != nil {
+		panic(err)
+	}
+
+	yalParser := parser.NewParser(ctx, tokens)
+	tree := yalParser.Run()
+
+	// for _, stmt := range tree {
+	// 	switch stmt.(type) {
+	// 	case *parser.Block:
+	// 	case *parser.DefineTypeStatement:
+	// 	case *parser.FnArgs:
+	// 	case *parser.FnDeclStmt:
+	// 		t, _ := stmt.(*parser.FnDeclStmt)
+	// 		fmt.Println(t.Type)
+	// 	case *parser.ForLoop:
+	// 	case *parser.IfExpr:
+	// 	case *parser.StatementExpression:
+	// 	case *parser.VarDeclExpression:
+	// 	case *parser.WhileLoop:
+	// 	default:
+	// 		panic(fmt.Sprintf("unexpected parser.IStatement: %#v", stmt))
+	// 	}
+	// }
+
+	data, err = json.MarshalIndent(tree, "", " ")
+	if err != nil {
+		panic(err)
+	}
+
 	fmt.Printf("%v\n", string(data))
 }

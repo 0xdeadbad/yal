@@ -7,15 +7,15 @@ import (
 
 // Token struct holding the lexeme and its position on the source code
 type Token struct {
-	Type   TokenType
-	Lexeme string
-	Line   uint64
-	Column uint64
+	TokenType TokenType
+	Lexeme    string
+	Line      uint64
+	Column    uint64
 }
 
 // Pretty printing for the Token struct
 func (t Token) String() string {
-	return fmt.Sprintf("{\n\t\tType: %+v\n\t\tLexeme: %s\n\t\tLine: %d\n\t\tColumn: %d\n\t}", t.Type, t.Lexeme, t.Line, t.Column)
+	return fmt.Sprintf("{\n\t\tType: %+v\n\t\tLexeme: %s\n\t\tLine: %d\n\t\tColumn: %d\n\t}", t.TokenType, t.Lexeme, t.Line, t.Column)
 }
 
 type TokenType uint16
@@ -90,6 +90,8 @@ const (
 	Number2
 
 	TypeAnn
+
+	DefineType
 )
 
 // String formating for the Tokens enums
@@ -215,9 +217,16 @@ func (t TokenType) String() string {
 		return "number(octal)"
 	case Number2:
 		return "number(binary)"
-	}
 
-	panic("Unknown token")
+	case TypeAnn:
+		return "type annotation"
+
+	case DefineType:
+		return "define type"
+
+	default:
+		panic("Unknown Token")
+	}
 }
 
 func (t TokenType) MarshalJSON() ([]byte, error) {

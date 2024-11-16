@@ -31,6 +31,7 @@ func NewLexer(ctx context.Context, source string) *Lexer {
 	keywords["NULL"] = Null
 	keywords["switch"] = Switch
 	keywords["goto"] = Goto
+	keywords["definetype"] = DefineType
 
 	return &Lexer{
 		source:   source,
@@ -49,7 +50,7 @@ func NewLexer(ctx context.Context, source string) *Lexer {
 func (l *Lexer) Scan() ([]Token, error) {
 	tokens := []Token{}
 
-	for token := l.NextToken(); token != nil && token.Type != Eof; token = l.NextToken() {
+	for token := l.NextToken(); token != nil && token.TokenType != Eof; token = l.NextToken() {
 		tokens = append(tokens[:], *token)
 	}
 
@@ -78,10 +79,10 @@ func (l *Lexer) emit(token_type TokenType) {
 
 func (l *Lexer) newToken(token_type TokenType) *Token {
 	token := Token{
-		Type:   token_type,
-		Lexeme: l.source[l.start:l.current],
-		Line:   l.line,
-		Column: l.column,
+		TokenType: token_type,
+		Lexeme:    l.source[l.start:l.current],
+		Line:      l.line,
+		Column:    l.column,
 	}
 	l.start = l.current
 	return &token

@@ -10,21 +10,24 @@ pkgs.stdenv.mkDerivation {
   #   done
   # '';
 
-  buildInputs = with pkgs; [
+  nativeBuildInputs = with pkgs; [
     go
   ];
 
+  configurePhase = ''
+    export TMPGODIR="$TMPDIR/$(stripHash $srcFile)"
+    export TMPCACHEDIR="$TMPGODIR/cache"
+    export TMPOUTDIR="$TMPGODIR/out"
+    mkdir -p "$TMPOUTDIR"
+    mkdir -p "$TMPCACHEDIR"
+  '';
+
   buildPhase = ''
-    mkdir -p $out/go-build-tmp
-    mkdir -p $out/result
-    GOCACHE=$out/go-build-tmp go build -o $out/result/yal $src/cmd/compiler/main.go
-    rm -rf $out/go-build-tmp
+    CGO=0 GOCACHE="$TMPCACHEDIR" go build -ldflags "-s -w" -o "$TMPOUTDIR/$name" cmd/compiler/main.go
   '';
 
   installPhase = ''
     mkdir -p $out/bin
-    cp $out/result/yal $out/bin
-    rm $out/result/yal
-    rmdir $out/result
+    cp $TMPOUTDIR/$name $out/bin
   '';
 }

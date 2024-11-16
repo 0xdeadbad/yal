@@ -256,6 +256,7 @@ func readBase16(l *Lexer) {
 	for IsBase16(l.peek()) {
 		l.advance()
 	}
+	// TODO: base16 with floating point? Questionable...
 	if l.peekMatch('.') {
 		for IsBase16(l.peek()) {
 			l.advance()
@@ -277,6 +278,7 @@ func readBase8(l *Lexer) {
 	for IsBase8(l.peek()) {
 		l.advance()
 	}
+	// TODO: base8 with floating point? Questionable...
 	if l.peekMatch('.') {
 		for IsBase8(l.peek()) {
 			l.advance()

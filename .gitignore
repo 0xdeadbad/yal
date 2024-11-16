@@ -14,4 +14,9 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-result/*
+result/
+result
+
+.direnv/
+
+test_code.yl
