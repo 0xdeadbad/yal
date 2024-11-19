@@ -10,20 +10,35 @@
     nixpkgs
   }:
   let
-    system = "x86_64-linux";
-    pkgs = nixpkgs.legacyPackages.${system};
-    yal = (import ./default.nix { inherit pkgs; });
+    forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.platforms.unix;
+
+    nixpkgsFor = forAllSystems (system: import nixpkgs {
+      inherit system;
+      config = { };
+      overlays = [ ];
+    });
   in
   {
-    packages.${system}.default = yal;
+    packages = forAllSystems (system:
+    let
+      pkgs = nixpkgsFor."${system}";
+      yal = (import ./default.nix { inherit pkgs; });
+    in
+    {
+      default = yal;
+    });
 
-    devShells.${system}.default = pkgs.mkShell {
-      packages = [
-        yal
-      ];
-      buildInputs = with pkgs; [
-        go
-      ];
-    };
+    devShells = forAllSystems (system:
+    let
+      pkgs = nixpkgsFor."${system}";
+      yal = (import ./default.nix { inherit pkgs; });
+    in
+    {
+      default = pkgs.mkShell {
+        packages = [
+          yal
+        ];
+      };
+    });
   };
 }
