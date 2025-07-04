@@ -19,5 +19,7 @@ jobs:
       # You can test your matrix by printing the current Go version
       - name: Display Go version
         run: go version
-      - name: Run all tests
-        run: go run -v ./...
+      - name: Run lexer tests
+        run: go test -v ./lexer/...
+      - name: Run parser tests
+        run: go test -v ./parser/...
