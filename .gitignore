@@ -20,3 +20,5 @@ result
 .direnv/
 
 test_code.yl
+main
+yal
